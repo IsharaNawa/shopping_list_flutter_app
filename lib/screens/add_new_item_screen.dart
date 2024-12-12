@@ -9,6 +9,12 @@ class AddNewItemScreen extends StatefulWidget {
 }
 
 class _AddNewItemScreenState extends State<AddNewItemScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  void submitValues() {
+    _formKey.currentState!.validate();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,6 +22,7 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
         title: const Text("Add new item"),
       ),
       body: Form(
+        key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
@@ -25,16 +32,35 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
                 decoration: const InputDecoration(
                   label: Text("Name"),
                 ),
-                validator: (value) => "",
+                validator: (value) {
+                  if (value == null ||
+                      value.isEmpty ||
+                      value.length <= 1 ||
+                      value.length > 50) {
+                    return "Must be a valid name with 0 to 50 characters!";
+                  }
+                  return null;
+                },
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: TextFormField(
-                      decoration:
-                          const InputDecoration(label: Text("Quantity")),
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        label: Text("Quantity"),
+                      ),
                       initialValue: "1",
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            int.tryParse(value) == null ||
+                            int.tryParse(value)! < 0) {
+                          return "Must be a valid positive number!";
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(
@@ -66,6 +92,24 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
                   ))
                 ],
               ),
+              const SizedBox(
+                height: 12,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      _formKey.currentState!.reset();
+                    },
+                    child: const Text("Reset"),
+                  ),
+                  ElevatedButton(
+                    onPressed: submitValues,
+                    child: const Text("Add Item"),
+                  )
+                ],
+              )
             ],
           ),
         ),
