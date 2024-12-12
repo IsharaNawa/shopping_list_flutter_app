@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list_app/data/categories.dart';
+import 'package:shopping_list_app/models/category.dart';
+import 'package:shopping_list_app/models/grocery_item.dart';
 
 class AddNewItemScreen extends StatefulWidget {
   const AddNewItemScreen({super.key});
@@ -10,9 +12,22 @@ class AddNewItemScreen extends StatefulWidget {
 
 class _AddNewItemScreenState extends State<AddNewItemScreen> {
   final _formKey = GlobalKey<FormState>();
+  String selectedName = "";
+  int selectedQuantity = 1;
+  Category selectedCategory = categories[Categories.vegetables]!;
 
   void submitValues() {
-    _formKey.currentState!.validate();
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      print(selectedName);
+      print(selectedQuantity);
+      print(selectedCategory.title);
+      Navigator.of(context).pop(GroceryItem(
+          id: DateTime.now().toString(),
+          name: selectedName,
+          quantity: selectedQuantity,
+          category: selectedCategory));
+    }
   }
 
   @override
@@ -41,6 +56,9 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
                   }
                   return null;
                 },
+                onSaved: (value) {
+                  selectedName = value!;
+                },
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -51,7 +69,7 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
                       decoration: const InputDecoration(
                         label: Text("Quantity"),
                       ),
-                      initialValue: "1",
+                      initialValue: selectedQuantity.toString(),
                       validator: (value) {
                         if (value == null ||
                             value.isEmpty ||
@@ -61,35 +79,44 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
                         }
                         return null;
                       },
+                      onSaved: (value) {
+                        selectedQuantity = int.parse(value!);
+                      },
                     ),
                   ),
                   const SizedBox(
                     width: 16,
                   ),
                   Expanded(
-                      child: DropdownButtonFormField(
-                    items: categories.entries
-                        .map(
-                          (index) => DropdownMenuItem(
-                            value: index.value,
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 20,
-                                  height: 20,
-                                  color: index.value.color,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(index.value.title)
-                              ],
+                    child: DropdownButtonFormField(
+                      value: selectedCategory,
+                      items: categories.entries
+                          .map(
+                            (index) => DropdownMenuItem(
+                              value: index.value,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 20,
+                                    height: 20,
+                                    color: index.value.color,
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(index.value.title)
+                                ],
+                              ),
                             ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {},
-                  ))
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCategory = value!;
+                        });
+                      },
+                    ),
+                  )
                 ],
               ),
               const SizedBox(

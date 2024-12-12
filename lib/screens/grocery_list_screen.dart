@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_list_app/data/dummy_items.dart';
+import 'package:shopping_list_app/models/grocery_item.dart';
 import 'package:shopping_list_app/screens/add_new_item_screen.dart';
 
 class GroceryListScreen extends StatefulWidget {
@@ -10,12 +10,17 @@ class GroceryListScreen extends StatefulWidget {
 }
 
 class _GroceryListScreenState extends State<GroceryListScreen> {
-  void addNewItem() {
-    Navigator.of(context).push(
+  List<GroceryItem> groceryItems = [];
+
+  void addNewItem() async {
+    final newItem = await Navigator.of(context).push<GroceryItem>(
       MaterialPageRoute(
         builder: (context) => const AddNewItemScreen(),
       ),
     );
+    setState(() {
+      groceryItems.add(newItem!);
+    });
   }
 
   @override
@@ -30,20 +35,31 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: groceryItems.length,
-        itemBuilder: (ctx, index) => ListTile(
-          leading: Container(
-            width: 24,
-            height: 24,
-            color: groceryItems[index].category.color,
-          ),
-          title: Text(groceryItems[index].name),
-          trailing: Text(
-            groceryItems[index].quantity.toString(),
-          ),
-        ),
-      ),
+      body: groceryItems.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "No Groceries have added yet!",
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              itemCount: groceryItems.length,
+              itemBuilder: (ctx, index) => ListTile(
+                leading: Container(
+                  width: 24,
+                  height: 24,
+                  color: groceryItems[index].category.color,
+                ),
+                title: Text(groceryItems[index].name),
+                trailing: Text(
+                  groceryItems[index].quantity.toString(),
+                ),
+              ),
+            ),
     );
   }
 }
