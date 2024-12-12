@@ -23,6 +23,12 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
     });
   }
 
+  void removeItem(GroceryItem groceryItem) {
+    setState(() {
+      groceryItems.remove(groceryItem);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,16 +54,22 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
             )
           : ListView.builder(
               itemCount: groceryItems.length,
-              itemBuilder: (ctx, index) => ListTile(
-                leading: Container(
-                  width: 24,
-                  height: 24,
-                  color: groceryItems[index].category.color,
+              itemBuilder: (ctx, index) => Dismissible(
+                key: ValueKey(groceryItems[index].id),
+                child: ListTile(
+                  leading: Container(
+                    width: 24,
+                    height: 24,
+                    color: groceryItems[index].category.color,
+                  ),
+                  title: Text(groceryItems[index].name),
+                  trailing: Text(
+                    groceryItems[index].quantity.toString(),
+                  ),
                 ),
-                title: Text(groceryItems[index].name),
-                trailing: Text(
-                  groceryItems[index].quantity.toString(),
-                ),
+                onDismissed: (direction) {
+                  removeItem(groceryItems[index]);
+                },
               ),
             ),
     );
