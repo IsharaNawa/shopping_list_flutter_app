@@ -19,9 +19,13 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
   String selectedName = "";
   int selectedQuantity = 1;
   Category selectedCategory = categories[Categories.vegetables]!;
+  bool isSending = false;
 
   void submitValues() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        isSending = true;
+      });
       _formKey.currentState!.save();
 
       final url = Uri.https(
@@ -43,6 +47,8 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
       if (!context.mounted) {
         return;
       }
+
+      isSending = false;
 
       Navigator.of(context).pop(
         GroceryItem(
@@ -151,14 +157,22 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () {
-                      _formKey.currentState!.reset();
-                    },
+                    onPressed: isSending
+                        ? null
+                        : () {
+                            _formKey.currentState!.reset();
+                          },
                     child: const Text("Reset"),
                   ),
                   ElevatedButton(
-                    onPressed: submitValues,
-                    child: const Text("Add Item"),
+                    onPressed: isSending ? null : submitValues,
+                    child: isSending
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(),
+                          )
+                        : const Text("Add Item"),
                   )
                 ],
               )

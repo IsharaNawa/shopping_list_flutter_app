@@ -5,7 +5,6 @@ import 'package:shopping_list_app/models/grocery_item.dart';
 import 'package:shopping_list_app/screens/add_new_item_screen.dart';
 
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 class GroceryListScreen extends StatefulWidget {
@@ -17,6 +16,7 @@ class GroceryListScreen extends StatefulWidget {
 
 class _GroceryListScreenState extends State<GroceryListScreen> {
   List<GroceryItem> groceryItems = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -55,6 +55,7 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
 
     setState(() {
       groceryItems = loadedGroceryItems;
+      isLoading = false;
     });
   }
 
@@ -80,6 +81,46 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Widget content = ListView.builder(
+      itemCount: groceryItems.length,
+      itemBuilder: (ctx, index) => Dismissible(
+        key: ValueKey(groceryItems[index].id),
+        child: ListTile(
+          leading: Container(
+            width: 24,
+            height: 24,
+            color: groceryItems[index].category.color,
+          ),
+          title: Text(groceryItems[index].name),
+          trailing: Text(
+            groceryItems[index].quantity.toString(),
+          ),
+        ),
+        onDismissed: (direction) {
+          removeItem(groceryItems[index]);
+        },
+      ),
+    );
+
+    if (groceryItems.isEmpty) {
+      content = const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "No Groceries have added yet!",
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isLoading) {
+      content = const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your groceries"),
@@ -90,37 +131,7 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
           )
         ],
       ),
-      body: groceryItems.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "No Groceries have added yet!",
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: groceryItems.length,
-              itemBuilder: (ctx, index) => Dismissible(
-                key: ValueKey(groceryItems[index].id),
-                child: ListTile(
-                  leading: Container(
-                    width: 24,
-                    height: 24,
-                    color: groceryItems[index].category.color,
-                  ),
-                  title: Text(groceryItems[index].name),
-                  trailing: Text(
-                    groceryItems[index].quantity.toString(),
-                  ),
-                ),
-                onDismissed: (direction) {
-                  removeItem(groceryItems[index]);
-                },
-              ),
-            ),
+      body: content,
     );
   }
 }
