@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shopping_list_app/data/categories.dart';
 import 'package:shopping_list_app/models/category.dart';
-import 'package:shopping_list_app/models/grocery_item.dart';
+
+import 'package:http/http.dart' as http;
 
 class AddNewItemScreen extends StatefulWidget {
   const AddNewItemScreen({super.key});
@@ -16,17 +19,31 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
   int selectedQuantity = 1;
   Category selectedCategory = categories[Categories.vegetables]!;
 
-  void submitValues() {
+  void submitValues() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      print(selectedName);
-      print(selectedQuantity);
-      print(selectedCategory.title);
-      Navigator.of(context).pop(GroceryItem(
-          id: DateTime.now().toString(),
-          name: selectedName,
-          quantity: selectedQuantity,
-          category: selectedCategory));
+
+      final url = Uri.https(
+          "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.app",
+          "shopping_list.json");
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(
+          {
+            "name": selectedName,
+            "quantity": selectedQuantity,
+            "category": selectedCategory.title
+          },
+        ),
+      );
+
+      if (!context.mounted) {
+        return;
+      }
+
+      Navigator.of(context).pop();
     }
   }
 
