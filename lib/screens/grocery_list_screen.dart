@@ -30,6 +30,11 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
         "shopping_list.json");
 
     final response = await http.get(url);
+
+    if (json.decode(response.body) == null) {
+      return;
+    }
+
     Map<String, dynamic> items = json.decode(response.body);
 
     List<GroceryItem> loadedGroceryItems = [];
@@ -54,12 +59,17 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
   }
 
   void addNewItem() async {
-    await Navigator.of(context).push<GroceryItem>(
+    final newItem = await Navigator.of(context).push<GroceryItem>(
       MaterialPageRoute(
         builder: (context) => const AddNewItemScreen(),
       ),
     );
-    _loadItems();
+    if (newItem == null) {
+      return;
+    }
+    setState(() {
+      groceryItems.add(newItem);
+    });
   }
 
   void removeItem(GroceryItem groceryItem) {
