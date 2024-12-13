@@ -17,6 +17,7 @@ class GroceryListScreen extends StatefulWidget {
 class _GroceryListScreenState extends State<GroceryListScreen> {
   List<GroceryItem> groceryItems = [];
   bool isLoading = true;
+  String? isError;
 
   @override
   void initState() {
@@ -30,6 +31,13 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
         "shopping_list.json");
 
     final response = await http.get(url);
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        isError = "Failed to fetch data. Please try again later";
+        return;
+      });
+    }
 
     if (json.decode(response.body) == null) {
       return;
@@ -73,10 +81,24 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
     });
   }
 
-  void removeItem(GroceryItem groceryItem) {
+  void removeItem(GroceryItem groceryItem) async {
+    int index = groceryItems.indexOf(groceryItem);
+
     setState(() {
       groceryItems.remove(groceryItem);
     });
+
+    final url = Uri.https(
+        "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.app",
+        "shopping_list/${groceryItem.id}.json");
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        groceryItems.insert(index, groceryItem);
+      });
+    }
   }
 
   @override
@@ -118,6 +140,19 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
     if (isLoading) {
       content = const Center(
         child: CircularProgressIndicator(),
+      );
+    }
+
+    if (isError != null) {
+      content = Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              isError!,
+            ),
+          ],
+        ),
       );
     }
 
