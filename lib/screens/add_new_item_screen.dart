@@ -29,35 +29,41 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
       _formKey.currentState!.save();
 
       final url = Uri.https(
-          "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.app",
+          "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.appa",
           "shopping_list.json");
 
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(
-          {
-            "name": selectedName,
-            "quantity": selectedQuantity,
-            "category": selectedCategory.title
-          },
-        ),
-      );
+      try {
+        final response = await http.post(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(
+            {
+              "name": selectedName,
+              "quantity": selectedQuantity,
+              "category": selectedCategory.title
+            },
+          ),
+        );
 
-      if (!context.mounted) {
-        return;
+        if (!context.mounted) {
+          return;
+        }
+
+        isSending = false;
+
+        Navigator.of(context).pop(
+          GroceryItem(
+            id: json.decode(response.body)["name"],
+            name: selectedName,
+            quantity: selectedQuantity,
+            category: selectedCategory,
+          ),
+        );
+      } catch (e) {
+        setState(() {
+          isSending = false;
+        });
       }
-
-      isSending = false;
-
-      Navigator.of(context).pop(
-        GroceryItem(
-          id: json.decode(response.body)["name"],
-          name: selectedName,
-          quantity: selectedQuantity,
-          category: selectedCategory,
-        ),
-      );
     }
   }
 

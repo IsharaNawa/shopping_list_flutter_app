@@ -30,44 +30,50 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
         "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.app",
         "shopping_list.json");
 
-    final response = await http.get(url);
+    try {
+      final response = await http.get(url);
 
-    if (response.statusCode >= 400) {
-      setState(() {
-        isError = "Failed to fetch data. Please try again later";
+      if (response.statusCode >= 400) {
+        setState(() {
+          isError = "Failed to fetch data. Please try again later";
+          return;
+        });
+      }
+
+      if (json.decode(response.body) == null) {
+        setState(() {
+          isLoading = false;
+        });
         return;
-      });
-    }
+      }
 
-    if (json.decode(response.body) == null) {
+      Map<String, dynamic> items = json.decode(response.body);
+
+      List<GroceryItem> loadedGroceryItems = [];
+
+      for (final entry in items.entries) {
+        final category_ = categories.entries.firstWhere(
+            (catItem) => catItem.value.title == entry.value["category"]);
+
+        loadedGroceryItems.add(
+          GroceryItem(
+            id: entry.key,
+            name: entry.value["name"],
+            quantity: entry.value["quantity"],
+            category: Category(category_.value.title, category_.value.color),
+          ),
+        );
+      }
+
       setState(() {
+        groceryItems = loadedGroceryItems;
         isLoading = false;
       });
-      return;
+    } catch (e) {
+      setState(() {
+        isError = "Something went wrong! Please try again later!";
+      });
     }
-
-    Map<String, dynamic> items = json.decode(response.body);
-
-    List<GroceryItem> loadedGroceryItems = [];
-
-    for (final entry in items.entries) {
-      final category_ = categories.entries.firstWhere(
-          (catItem) => catItem.value.title == entry.value["category"]);
-
-      loadedGroceryItems.add(
-        GroceryItem(
-          id: entry.key,
-          name: entry.value["name"],
-          quantity: entry.value["quantity"],
-          category: Category(category_.value.title, category_.value.color),
-        ),
-      );
-    }
-
-    setState(() {
-      groceryItems = loadedGroceryItems;
-      isLoading = false;
-    });
   }
 
   void addNewItem() async {
@@ -95,9 +101,15 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
         "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.app",
         "shopping_list/${groceryItem.id}.json");
 
-    final response = await http.delete(url);
+    try {
+      final response = await http.delete(url);
 
-    if (response.statusCode >= 400) {
+      if (response.statusCode >= 400) {
+        setState(() {
+          groceryItems.insert(index, groceryItem);
+        });
+      }
+    } catch (e) {
       setState(() {
         groceryItems.insert(index, groceryItem);
       });
