@@ -29,7 +29,7 @@ class _AddNewItemScreenState extends State<AddNewItemScreen> {
       _formKey.currentState!.save();
 
       final url = Uri.https(
-          "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.appa",
+          "shoppinglist-c7050-default-rtdb.asia-southeast1.firebasedatabase.app",
           "shopping_list.json");
 
       try {
