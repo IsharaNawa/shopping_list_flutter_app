@@ -40,6 +40,9 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
     }
 
     if (json.decode(response.body) == null) {
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
